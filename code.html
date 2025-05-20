@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kalkulator Matriks Interaktif</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    /* Reset & base */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0a1c3e 0%, #021021 90%);
+      font-family: 'Poppins', sans-serif;
+      color: #eef3ff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem 1rem 3rem;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    h1 {
+      font-weight: 600;
+      color: #00aaff;
+      font-size: 2.6rem;
+      margin-bottom: 0.5rem;
+      text-align: center;
+      text-shadow: 0 0 12px #00aaffcc, 0 0 20px #00aaffbb;
+      user-select: none;
+    }
+    header {
+      width: 100%;
+      max-width: 1080px;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    /* Neon glow logo */
+    .logo {
+      position: absolute;
+      left: 0;
+      font-weight: 700;
+      font-size: 1.6rem;
+      color: #00cfff;
+      text-shadow:
+        0 0 8px #00cfff,
+        0 0 15px #00cfff,
+        0 0 30px #00e7ff,
+        0 0 60px #00e7ff;
+      user-select: none;
+    }
+
+    /* Matrices Container - for matrices input */
+    .matrices-wrapper {
+      max-width: 1080px;
+      width: 100%;
+      display: flex;
+      gap: 1.8rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 2rem;
+      user-select: none;
+    }
+
+    /* Individual Matrix Section */
+    .matrix-section {
+      background: #0b1640;
+      border-radius: 16px;
+      box-shadow:
+        0 0 25px #02c8ffcc inset,
+        0 0 35px #02c8ffaa;
+      flex: 1 1 420px;
+      min-width: 320px;
+      display: flex;
+      flex-direction: column;
+      padding: 1.4rem 1.8rem;
+      transition: opacity 0.3s ease, max-height 0.4s ease;
+    }
+    .matrix-section.hidden {
+      opacity: 0;
+      max-height: 0;
+      padding: 0 1.8rem;
+      overflow: hidden;
+      user-select: none;
+      pointer-events: none;
+    }
+    .matrix-section h2 {
+      font-weight: 600;
+      font-size: 1.4rem;
+      color: #7bdfff;
+      margin-bottom: 1rem;
+      text-align: center;
+      text-shadow: 0 0 8px #00bfffcc;
+    }
+
+    /* Ordo controls for each matrix */
+    .input-ordo {
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: center;
+      gap: 1.2rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .input-ordo label {
+      color: #a8cfff;
+      font-weight: 600;
+      font-size: 1rem;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .input-ordo select {
+      background: #022051;
+      border: none;
+      padding: 0.3rem 0.7rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      color: #c6e8ff;
+      cursor: pointer;
+      box-shadow: 0 0 8px #00aaee77;
+      transition: background 0.3s ease;
+      user-select: none;
+    }
+    .input-ordo select:hover, .input-ordo select:focus {
+      background: #0340a6;
+      outline: none;
+    }
+    .input-ordo button {
+      background: #00aaff;
+      padding: 0.5rem 1.2rem;
+      border-radius: 10px;
+      font-weight: 700;
+      color: #f0faff;
+      border: none;
+      cursor: pointer;
+      box-shadow:
+        0 0 15px #00aaffcc,
+        0 0 40px #00ccff77;
+      transition: background 0.25s ease;
+      flex-shrink: 0;
+      user-select: none;
+    }
+    .input-ordo button:hover {
+      background: #33c6ff;
+      box-shadow:
+        0 0 25px #00aaffee,
+        0 0 60px #00ddffdd;
+    }
+    .input-ordo button:active {
+      transform: scale(0.96);
+    }
+
+    /* Matrix Input Grid */
+    .matrix-grid {
+      display: grid;
+      gap: 0.8rem;
+      background: #04193b;
+      border-radius: 12px;
+      padding: 1rem;
+      justify-content: center;
+      transition: all 0.3s ease;
+      user-select: text;
+    }
+    input.matrix-cell {
+      width: 54px;
+      height: 38px;
+      border-radius: 8px;
+      border: none;
+      background: #0c2659;
+      color: #c6e8ff;
+      font-size: 1.1rem;
+      text-align: center;
+      box-shadow:
+        0 0 4px #009ee799 inset,
+        0 0 10px #007acc99;
+      transition: background 0.25s ease;
+      user-select: text;
+    }
+    input.matrix-cell:focus {
+      outline: none;
+      background: #009ee7;
+      color: #f0faff;
+      box-shadow:
+        0 0 15px #2ec5ff,
+        0 0 20px #00aaffee;
+    }
+
+    /* Row / Column Adjust Buttons */
+    .modify-dimensions {
+      margin-top: 12px;
+      display: flex;
+      gap: 1rem;
+      color: #7bc7ffcc;
+      font-size: 0.9rem;
+      user-select: none;
+      justify-content: center;
+    }
+    .modify-dimensions button {
+      background: #003164;
+      border: none;
+      color: #85ccff;
+      padding: 0.3rem 0.9rem;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 0 6px #0050f2;
+      transition: background 0.15s ease;
+      font-weight: 700;
+      user-select: none;
+    }
+    .modify-dimensions button:hover {
+      background: #004ea0;
+      box-shadow: 0 0 15px #009dff;
+    }
+    .modify-dimensions button:active {
+      transform: scale(0.94);
+    }
+
+    /* Panel Operasi */
+    .panel-operations {
+      max-width: 1080px;
+      width: 100%;
+      background: #011638;
+      padding: 1.4rem 2rem;
+      border-radius: 24px;
+      box-shadow:
+        0 0 30px #33baffdd,
+        inset 0 0 40px #014ea5;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.2rem;
+      justify-content: center;
+      user-select: none;
+      margin-bottom: 3rem;
+      user-select: none;
+    }
+    .op-btn {
+      flex: 1 0 140px;
+      max-width: 170px;
+      background: #00225f;
+      color: #99ccff;
+      font-weight: 700;
+      font-size: 1.15rem;
+      border-radius: 24px;
+      padding: 1rem 0;
+      cursor: pointer;
+      box-shadow:
+        0 0 25px #1cb5ff99,
+        0 0 35px #007acc88;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: background 0.3s ease, transform 0.2s ease;
+      overflow: visible;
+      user-select: none;
+    }
+    /* Neon light rotating border animation */
+    .op-btn::before {
+      content: '';
+      position: absolute;
+      top: -6px; left: -6px; right: -6px; bottom: -6px;
+      border-radius: 28px;
+      background: linear-gradient(90deg, #00d1ff, #1cb5ff, #004ea5, #00e5ff);
+      background-size: 400% 400%;
+      animation: rotateLight 4s linear infinite;
+      opacity: 0.75;
+      z-index: -1;
+      filter: drop-shadow(0 0 10px #1cb5ffbd);
+    }
+    .op-btn:hover {
+      background: #00aaff;
+      color: #fffefe;
+      box-shadow:
+        0 0 45px #23c7ffdd,
+        0 0 70px #0ad5ffcc;
+      transform: scale(1.1);
+      z-index: 2;
+      user-select: none;
+    }
+    .op-btn:active {
+      transform: scale(0.95);
+    }
+    @keyframes rotateLight {
+      0% {
+        background-position: 0% 50%;
+      }
+      100% {
+        background-position: 400% 50%;
+      }
+    }
+
+    /* Panel Hasil */
+    .result-panel {
+      max-width: 1080px;
+      width: 100%;
+      background: #021037;
+      border-radius: 24px;
+      padding: 1.5rem 2rem;
+      box-shadow: 0 0 30px #00aaffdd inset;
+      color: #add8ff;
+      font-weight: 500;
+      user-select: text;
+      min-height: 170px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .result-panel h2 {
+      font-weight: 700;
+      margin-bottom: 1.4rem;
+      color: #55c0ff;
+      text-align: center;
+      text-shadow: 0 0 10px #00bfffbb;
+      user-select: none;
+    }
+    .result-matrix {
+      margin: 0 auto;
+      display: inline-grid;
+      grid-gap: 6px;
+      border-radius: 12px;
+      background: #06488c;
+      box-shadow:
+        0 0 12px #00aaffbb inset;
+      padding: 0.8rem 1rem;
+      user-select: text;
+      max-width: 100%;
+      overflow-x: auto;
+    }
+    .result-matrix div {
+      min-width: 44px;
+      min-height: 36px;
+      background: #023a82;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: 600;
+      border-radius: 10px;
+      color: #b2dbff;
+      box-shadow:
+        0 0 5px #00afffdd inset;
+      user-select: text;
+    }
+    .steps {
+      margin-top: 1.3rem;
+      font-size: 1rem;
+      line-height: 1.4;
+      color: #a3c9ffcc;
+      max-height: 200px;
+      overflow-y: auto;
+      padding-right: 1.2rem;
+      white-space: pre-line;
+      font-family: monospace;
+      border-left: 4px solid #00aaff99;
+      width: 100%;
+      box-sizing: border-box;
+      user-select: text;
+      text-align: left;
+    }
+
+    /* Responsive */
+    @media (max-width: 960px) {
+      .matrices-wrapper {
+        flex-direction: column;
+        gap: 2rem;
+      }
+      .matrix-section {
+        min-width: auto;
+      }
+      .panel-operations {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .op-btn {
+        max-width: 100%;
+      }
+    }
+    @media (max-width: 420px) {
+      .matrix-grid {
+        overflow-x: auto;
+      }
+      input.matrix-cell {
+        width: 46px;
+        height: 34px;
+        font-size: 1rem;
+      }
+      .result-matrix {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">MatrixCalc</div>
+    <h1>Kalkulator Matriks Interaktif</h1>
+  </header>
+
+  <main class="matrices-wrapper" aria-label="Area input matriks">
+    <!-- Matriks A Section -->
+    <section class="matrix-section" aria-labelledby="title-matrixA" id="matrixA-section">
+      <h2 id="title-matrixA">Matriks A</h2>
+      <div class="input-ordo" aria-label="Input ordo matriks A">
+        <label for="orderA-rows">Baris:</label>
+        <select id="orderA-rows" aria-label="Pilih jumlah baris matriks A">
+          <option value="2">2</option>
+          <option value="3" selected>3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+        </select>
+
+        <label for="orderA-cols">Kolom:</label>
+        <select id="orderA-cols" aria-label="Pilih jumlah kolom matriks A">
+          <option value="2">2</option>
+          <option value="3" selected>3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+        </select>
+
+        <button id="create-matrixA" aria-label="Buat matriks A">Update Matriks A</button>
+      </div>
+      <div class="matrix-grid" id="matrixA-grid" role="grid" aria-label="Grid input matriks A">
+        <!-- Generated inputs matriks A -->
+      </div>
+      <div class="modify-dimensions" aria-label="Tambah baris atau kolom matriks A">
+        <button id="add-rowA" aria-label="Tambah baris matriks A">Tambah Baris</button>
+        <button id="add-colA" aria-label="Tambah kolom matriks A">Tambah Kolom</button>
+      </div>
+    </section>
+
+    <!-- Matriks B Section -->
+    <section class="matrix-section" aria-labelledby="title-matrixB" id="matrixB-section">
+      <h2 id="title-matrixB">Matriks B</h2>
+      <div class="input-ordo" aria-label="Input ordo matriks B">
+        <label for="orderB-rows">Baris:</label>
+        <select id="orderB-rows" aria-label="Pilih jumlah baris matriks B">
+          <option value="2">2</option>
+          <option value="3" selected>3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+        </select>
+
+        <label for="orderB-cols">Kolom:</label>
+        <select id="orderB-cols" aria-label="Pilih jumlah kolom matriks B">
+          <option value="2">2</option>
+          <option value="3" selected>3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+        </select>
+
+        <button id="create-matrixB" aria-label="Buat matriks B">Update Matriks B</button>
+      </div>
+      <div class="matrix-grid" id="matrixB-grid" role="grid" aria-label="Grid input matriks B">
+        <!-- Generated inputs matriks B -->
+      </div>
+      <div class="modify-dimensions" aria-label="Tambah baris atau kolom matriks B">
+        <button id="add-rowB" aria-label="Tambah baris matriks B">Tambah Baris</button>
+        <button id="add-colB" aria-label="Tambah kolom matriks B">Tambah Kolom</button>
+      </div>
+    </section>
+  </main>
+
+  <section class="panel-operations" aria-label="Panel operasi matriks">
+    <button class="op-btn" data-op="add" aria-label="Penjumlahan Matriks">➕ Penjumlahan</button>
+    <button class="op-btn" data-op="subtract" aria-label="Pengurangan Matriks">➖ Pengurangan</button>
+    <button class="op-btn" data-op="multiply" aria-label="Perkalian Matriks">✖ Perkalian</button>
+    <button class="op-btn" data-op="obe" aria-label="Operasi Baris Elementer Matriks A">ℹ️ OBE</button>
+    <button class="op-btn" data-op="oke" aria-label="Operasi Kolom Elementer Matriks A">ℹ️ OKE</button>
+    <button class="op-btn" data-op="adjoint" aria-label="Adjoin Matriks A">♻️ Adjoin</button>
+    <button class="op-btn" data-op="transpose" aria-label="Transpose Matriks A">⤴️ Transpose</button>
+    <button class="op-btn" data-op="determinant" aria-label="Determinan Matriks A 3x3 (Sarrus)">∑ Determinan</button>
+  </section>
+
+  <section class="result-panel" aria-live="polite" aria-atomic="true" aria-label="Hasil operasi matriks">
+    <h2>Hasil Operasi</h2>
+    <div id="result-matrix" class="result-matrix" aria-label="Matriks hasil">
+      <!-- Result grid populated here -->
+    </div>
+    <pre class="steps" id="steps" aria-label="Keterangan operasi">
+      <!-- Deskripsi hasil dan langkah-langkah -->
+    </pre>
+  </section>
+
+  <script>
+  (function(){
+    const selectors = {
+      orderA_rows: '#orderA-rows',
+      orderA_cols: '#orderA-cols',
+      createA: '#create-matrixA',
+      matrixA_grid: '#matrixA-grid',
+      addRowA: '#add-rowA',
+      addColA: '#add-colA',
+
+      orderB_rows: '#orderB-rows',
+      orderB_cols: '#orderB-cols',
+      createB: '#create-matrixB',
+      matrixB_grid: '#matrixB-grid',
+      addRowB: '#add-rowB',
+      addColB: '#add-colB',
+
+      matrixB_section: '#matrixB-section',
+      panelOperations: '.panel-operations',
+      resultMatrix: '#result-matrix',
+      stepsArea: '#steps'
+    };
+
+    // Elements references
+    const el = {};
+    for(const key in selectors){
+      el[key] = document.querySelector(selectors[key]);
+    }
+
+    let matrixA = [], matrixB = [];
+    let rowsA = parseInt(el.orderA_rows.value);
+    let colsA = parseInt(el.orderA_cols.value);
+    let rowsB = parseInt(el.orderB_rows.value);
+    let colsB = parseInt(el.orderB_cols.value);
+
+    // Utils
+    function createInputCell(row, col){
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.className = 'matrix-cell';
+      input.setAttribute('aria-label', `Elemen baris ${row+1} kolom ${col+1}`);
+      input.dataset.row = row;
+      input.dataset.col = col;
+      input.value = '';
+      input.autocomplete = 'off';
+      input.addEventListener('keydown', e=>{
+        const r = parseInt(input.dataset.row);
+        const c = parseInt(input.dataset.col);
+        const container = input.parentElement;
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          const next = container.querySelector(`input[data-row="${r}"][data-col="${c+1}"]`);
+          if (next) next.focus();
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          const prev = container.querySelector(`input[data-row="${r}"][data-col="${c-1}"]`);
+          if (prev) prev.focus();
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          const down = container.querySelector(`input[data-row="${r+1}"][data-col="${c}"]`);
+          if (down) down.focus();
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          const up = container.querySelector(`input[data-row="${r-1}"][data-col="${c}"]`);
+          if (up) up.focus();
+        }
+      });
+      return input;
+    }
+
+    function generateMatrixGrid(container, r, c, modelArr){
+      container.innerHTML = '';
+      container.style.gridTemplateColumns = `repeat(${c}, 56px)`;
+      modelArr.length = 0;
+      for(let i=0; i<r; i++){
+        const rowArr = [];
+        for(let j=0; j<c; j++){
+          const cell = createInputCell(i,j);
+          container.appendChild(cell);
+          rowArr.push(cell);
+        }
+        modelArr.push(rowArr);
+      }
+    }
+
+    function readMatrix(modelArr){
+      const mat = [];
+      for(let i=0; i<modelArr.length; i++){
+        const rowArr = [];
+        for(let j=0; j<modelArr[i].length; j++){
+          let val = parseFloat(modelArr[i][j].value);
+          if (isNaN(val)) val = 0;
+          rowArr.push(val);
+        }
+        mat.push(rowArr);
+      }
+      return mat;
+    }
+
+    function displayResultMatrix(mat){
+      el.resultMatrix.innerHTML = '';
+      if (!mat || mat.length === 0) return;
+      const r = mat.length, c = mat[0].length;
+      el.resultMatrix.style.gridTemplateColumns = `repeat(${c}, 56px)`;
+      for(let i=0; i<r; i++){
+        for(let j=0; j<c; j++){
+          const div = document.createElement('div');
+          div.textContent = mat[i][j];
+          el.resultMatrix.appendChild(div);
+        }
+      }
+    }
+
+    // Matrix operations
+    const matOps = {
+      add: (A,B) => {
+        if(A.length !== B.length || A[0].length !== B[0].length) return null;
+        const res = [];
+        for(let i=0;i<A.length;i++){
+          const row = [];
+          for(let j=0; j<A[0].length; j++){
+            row.push(A[i][j] + B[i][j]);
+          }
+          res.push(row);
+        }
+        return res;
+      },
+      subtract: (A,B) => {
+        if(A.length !== B.length || A[0].length !== B[0].length) return null;
+        const res = [];
+        for(let i=0;i<A.length;i++){
+          const row = [];
+          for(let j=0; j<A[0].length; j++){
+            row.push(A[i][j] - B[i][j]);
+          }
+          res.push(row);
+        }
+        return res;
+      },
+      multiply: (A,B) => {
+        if(A[0].length !== B.length) return null;
+        const res = [];
+        for(let i=0; i<A.length; i++){
+          const row = [];
+          for(let j=0; j<B[0].length; j++){
+            let sum=0;
+            for(let k=0; k<A[0].length; k++){
+              sum+= A[i][k]*B[k][j];
+            }
+            row.push(sum);
+          }
+          res.push(row);
+        }
+        return res;
+      },
+      adjoint: (A) => {
+        const n = A.length;
+        if (n !== A[0].length) return null;
+        function minorMatrix(M,i,j){
+          const res = [];
+          for(let r=0; r<M.length; r++){
+            if(r===i) continue;
+            const row=[];
+            for(let c=0;c<M.length;c++){
+              if(c===j) continue;
+              row.push(M[r][c]);
+            }
+            res.push(row);
+          }
+          return res;
+        }
+        function determinant(M){
+          const size = M.length;
+          if(size===1) return M[0][0];
+          if(size===2) return M[0][0]*M[1][1]-M[0][1]*M[1][0];
+          let det=0;
+          for(let c=0;c<size;c++){
+            det+= ((c%2===0)?1:-1)*M[0][c]*determinant(minorMatrix(M,0,c));
+          }
+          return det;
+        }
+        function cofactor(M,i,j){
+          return determinant(minorMatrix(M,i,j));
+        }
+        const cofactors = [];
+        for(let i=0;i<n;i++){
+          const row=[];
+          for(let j=0;j<n;j++){
+            const sign = ((i+j)%2===0)?1:-1;
+            row.push(sign*cofactor(A,i,j));
+          }
+          cofactors.push(row);
+        }
+        // transpose cofactors
+        const adj = [];
+        for(let i=0;i<n;i++){
+          const row=[];
+          for(let j=0;j<n;j++){
+            row.push(cofactors[j][i]);
+          }
+          adj.push(row);
+        }
+        return adj;
+      },
+      determinant: (M) => {
+        if(M.length!==3 || M[0].length!==3) return null;
+        const m=M;
+        return (m[0][0]*m[1][1]*m[2][2]+m[0][1]*m[1][2]*m[2][0]+m[0][2]*m[1][0]*m[2][1])
+              -(m[2][0]*m[1][1]*m[0][2]+m[2][1]*m[1][2]*m[0][0]+m[2][2]*m[1][0]*m[0][1]);
+      },
+      transpose: (M) => {
+        const res = [];
+        for(let j=0;j<M[0].length;j++){
+          const row=[];
+          for(let i=0;i<M.length;i++){
+            row.push(M[i][j]);
+          }
+          res.push(row);
+        }
+        return res;
+      },
+      obe: (A) => {
+        // placeholder simpan sama saja
+        return {res:A, steps:`Langkah-langkah Operasi OBE:\n- Pilih baris\n- Lakukan operasi elementer\n- Ulangi hingga bentuk akhir.`};
+      },
+      oke: (A) => {
+        return {res:A, steps:`Langkah-langkah Operasi OKE:\n- Pilih kolom\n- Lakukan operasi elementer\n- Ulangi hingga bentuk akhir.`};
+      }
+    };
+
+    function toggleMatrixB(show){
+      if(show) el.matrixB_section.classList.remove('hidden');
+      else el.matrixB_section.classList.add('hidden');
+    }
+
+    function updateMatrix(type){
+      if(type==='A'){
+        rowsA = parseInt(el.orderA_rows.value);
+        colsA = parseInt(el.orderA_cols.value);
+        generateMatrixGrid(el.matrixA_grid, rowsA, colsA, matrixA);
+        clearResult();
+      } else if(type==='B'){
+        rowsB = parseInt(el.orderB_rows.value);
+        colsB = parseInt(el.orderB_cols.value);
+        generateMatrixGrid(el.matrixB_grid, rowsB, colsB, matrixB);
+        clearResult();
+      }
+    }
+
+    function clearResult(){
+      displayResultMatrix([]);
+      el.stepsArea.textContent = '';
+    }
+
+    function addDimension(type, dim){
+      if(type==='A'){
+        if(dim==='row' && rowsA<10) {
+          rowsA++;
+          el.orderA_rows.value = rowsA;
+          updateMatrix('A');
+        }
+        else if(dim==='col' && colsA<10) {
+          colsA++;
+          el.orderA_cols.value = colsA;
+          updateMatrix('A');
+        }
+      } else if(type==='B'){
+        if(dim==='row' && rowsB<10) {
+          rowsB++;
+          el.orderB_rows.value = rowsB;
+          updateMatrix('B');
+        }
+        else if(dim==='col' && colsB<10) {
+          colsB++;
+          el.orderB_cols.value = colsB;
+          updateMatrix('B');
+        }
+      }
+    }
+
+    // Event Listeners Setup
+    el.createA.addEventListener('click', ()=>updateMatrix('A'));
+    el.createB.addEventListener('click', ()=>updateMatrix('B'));
+    el.addRowA.addEventListener('click', ()=>addDimension('A','row'));
+    el.addColA.addEventListener('click', ()=>addDimension('A','col'));
+    el.addRowB.addEventListener('click', ()=>addDimension('B','row'));
+    el.addColB.addEventListener('click', ()=>addDimension('B','col'));
+
+    el.panelOperations.addEventListener('click', e => {
+      if(!e.target.matches('.op-btn')) return;
+      const op = e.target.dataset.op;
+      const ops_need_B = ['add','subtract','multiply'];
+      toggleMatrixB(ops_need_B.includes(op));
+
+      const A = readMatrix(matrixA);
+      const B = readMatrix(matrixB);
+
+      let result = null;
+      let steps = '';
+
+      if(op === 'add' || op === 'subtract' || op === 'multiply'){
+        if(op === 'add' || op === 'subtract'){
+          if(A.length !== B.length || A[0].length !== B[0].length){
+            alert('Operasi memerlukan Matriks A dan B berordo sama.');
+            return;
+          }
+        }
+        if(op === 'multiply' && A[0].length !== B.length){
+          alert('Perkalian memerlukan jumlah kolom Matriks A sama dengan jumlah baris Matriks B.');
+          return;
+        }
+        result = matOps[op](A,B);
+        steps = `Operasi ${op.charAt(0).toUpperCase() + op.slice(1)} Matriks A dan B berordo ${A.length}x${A[0].length} selesai.`;
+      } else if(['obe','oke'].includes(op)){
+        const {res, steps: s} = matOps[op](A);
+        result = res;
+        steps = s;
+      } else if(op === 'adjoint'){
+        if(A.length!==A[0].length){
+          alert('Adjoin hanya untuk Matriks A bujursangkar.');
+          return;
+        }
+        result = matOps.adjoint(A);
+        steps = `Operasi Adjoin Matriks A berordo ${A.length}x${A[0].length} selesai.`;
+      } else if(op === 'transpose'){
+        result = matOps.transpose(A);
+        steps = `Operasi Transpose Matriks A berordo ${A.length}x${A[0].length} selesai.`;
+      } else if(op === 'determinant'){
+        if(A.length!==3 || A[0].length!==3){
+          alert('Determinan metode Sarrus hanya untuk Matriks A berordo 3x3.');
+          return;
+        }
+        const det = matOps.determinant(A);
+        steps = `Determinan Matriks A 3x3 dengan metode Sarrus adalah: ${det}`;
+        result = [[det]];
+      }
+
+      if(result){
+        displayResultMatrix(result);
+        el.stepsArea.textContent = steps;
+      }
+    });
+
+    // Initialize
+    updateMatrix('A');
+    updateMatrix('B');
+    toggleMatrixB(true);
+  })();
+  </script>
+</body>
+</html>
+
